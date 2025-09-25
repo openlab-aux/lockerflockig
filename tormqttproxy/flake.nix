@@ -12,6 +12,7 @@
     };
 
     agenix.url = "github:ryantm/agenix";
+
   };
 
   outputs =
@@ -40,6 +41,15 @@
       deploy.nodes = {
         node1 = {
           hostname = "172.16.0.181";
+          profiles.system = {
+            user = "root";
+            sshUser = "root";
+            path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.proxy;
+            remoteBuild = false;
+          };
+        };
+        node2 = {
+          hostname = "172.16.0.230";
           profiles.system = {
             user = "root";
             sshUser = "root";
