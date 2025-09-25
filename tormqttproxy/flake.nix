@@ -20,11 +20,16 @@
       nixpkgs,
       disko,
       deploy-rs,
-      agenix
+      agenix,
     }:
     {
       nixosConfigurations.proxy = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
+        specialArgs = {
+          keys = [
+            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGnZ9eV387NUKXIs+TSxRjL5bH/bCp2qI7imzTuhjsdh"
+          ];
+        };
         modules = [
           ./configuration.nix
           disko.nixosModules.disko

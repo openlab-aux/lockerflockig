@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, keys, ... }:
 {
 
   imports = [
@@ -58,9 +58,7 @@
     #   packages = with pkgs; [
     #     tree
     #   ];
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGnZ9eV387NUKXIs+TSxRjL5bH/bCp2qI7imzTuhjsdh root@nixos"
-    ];
+    openssh.authorizedKeys.keys = keys;
   };
 
   # programs.firefox.enable = true;
