@@ -1,4 +1,10 @@
-{ config, pkgs, keys, ... }:
+{
+  config,
+  pkgs,
+  keys,
+  hostname,
+  ...
+}:
 {
 
   imports = [
@@ -9,7 +15,7 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = false;
 
-  networking.hostName = "tormqttproxy1"; # Define your hostname.
+  networking.hostName = hostname; # Define your hostname.
 
   # Pick only one of the below networking options.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -69,7 +75,25 @@
     #   vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     #   wget
     neovim
+    qrrs
   ];
+
+  programs.bash.shellInit = ''
+    if [[ $- == *i* ]] && [[ -z "$NIX_STORE_SERVE" ]]; then
+      hostname
+      ip a
+      echo
+      echo
+      if [[ -f /var/lib/tor/onion/mqtt/hostname ]]; then
+        cat /var/lib/tor/onion/mqtt/hostname
+        qrrs `cat /var/lib/tor/onion/mqtt/hostname`
+      else
+        echo "Tor onion service not yet available"
+      fi
+    fi
+  '';
+
+  services.getty.autologinUser = "root";
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -87,6 +111,7 @@
     settings = {
       PasswordAuthentication = false;
       KbdInteractiveAuthentication = false;
+      PermitRootLogin = "yes";
     };
   };
   # Open ports in the firewall.
