@@ -1,18 +1,25 @@
-{ config, pkgs, mqttBridgeAddress, ... }:
+{
+  config,
+  pkgs,
+  mqttBridgeAddress,
+  ...
+}:
 {
   services.mosquitto = {
     enable = true;
     bridges.tor = {
-      addresses = [{
-        address = "127.0.0.1"; 
-        port = 18830;         
-      }];
+      addresses = [
+        {
+          address = "127.0.0.1";
+          port = 18830;
+        }
+      ];
       topics = [
         "# both 2"
       ];
     };
   };
-  
+
   services.tor = {
     enable = true;
     relay.onionServices.mqtt = {
@@ -31,7 +38,6 @@
     torsocks.enable = true;
   };
 
-  
   networking.firewall.allowedTCPPorts = [ 1883 ];
 
   systemd.services.mqtt-tor-proxy = {
@@ -39,7 +45,7 @@
     after = [ "tor.service" ];
     wants = [ "tor.service" ];
     wantedBy = [ "multi-user.target" ];
-    
+
     serviceConfig = {
       ExecStart = "${pkgs.socat}/bin/socat TCP-LISTEN:18830,reuseaddr,fork SOCKS5:127.0.0.1:${mqttBridgeAddress}:1883,socksport=9050";
       Restart = "always";

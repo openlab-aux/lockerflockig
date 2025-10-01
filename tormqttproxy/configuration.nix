@@ -3,6 +3,7 @@
   pkgs,
   keys,
   hostname,
+  agenix,
   ...
 }:
 {
@@ -14,6 +15,21 @@
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = false;
+  boot.kernelParams = [ "ip=dhcp" ];
+
+  boot.initrd = {
+    availableKernelModules = [ "r8169" ];
+    network = {
+      enable = true;
+      ssh = {
+        enable = true;
+        port = 22;
+        authorizedKeys = keys;
+        hostKeys = [ /etc/secrets/initrd/ssh_host_ed25519_key ];
+        shell = "/bin/cryptsetup-askpass";
+      };
+    };
+  };
 
   networking.hostName = hostname; # Define your hostname.
 
