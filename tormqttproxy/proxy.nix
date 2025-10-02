@@ -3,6 +3,8 @@
   lib,
   pkgs,
   mqttBridgeAddress,
+  mqttTopicPrefix,
+  topics,
   ...
 }:
 let
@@ -110,6 +112,7 @@ in
         "BATTERY"
         "CONNECTED"
         "DISCONNECTED"
+        "ADVERTISEMENT"
       ];
       description = "List of MeshCore event types to subscribe to";
     };
@@ -150,9 +153,7 @@ in
             port = 18830;
           }
         ];
-        topics = [
-          "# both 2"
-        ];
+        topics = topics;
       };
     };
 
@@ -200,8 +201,8 @@ in
       meshcoreAddress = "/dev/ttyUSB0";
       # Uncomment and adjust these if needed:
       # meshcoreBaudrate = 115200;
-      # logLevel = "DEBUG";
-      # mqttTopicPrefix = "meshcore";
+      logLevel = "DEBUG";
+      mqttTopicPrefix = mqttTopicPrefix;
     };
 
     users.users.${cfg.user} = lib.mkIf cfg.enable {

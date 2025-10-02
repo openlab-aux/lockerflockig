@@ -95,6 +95,7 @@
     qrrs
     pythonPackages.python3-meshcore
     pythonPackages.python3-mqttproxy
+    mosquitto
   ];
 
   programs.bash.shellInit = ''
