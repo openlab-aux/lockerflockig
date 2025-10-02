@@ -12,7 +12,7 @@
     };
 
     agenix.url = "github:ryantm/agenix";
-
+    flake-utils.url = "github:numtide/flake-utils";
   };
 
   outputs =
@@ -22,23 +22,27 @@
       disko,
       deploy-rs,
       agenix,
+      flake-utils,
     }:
 
     let
+      system = "x86_64-linux";
       createSystem =
         {
           keys,
           hostname,
           mqttBridgeAddress,
+
         }:
         nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
+          inherit system;
           specialArgs = {
             inherit
               keys
               hostname
               mqttBridgeAddress
               ;
+            pythonPackages = self.packages."${system}";
           };
           modules = [
             ./configuration.nix
@@ -47,9 +51,23 @@
             agenix.nixosModules.default
           ];
         };
-    in
 
+      pkgs = import nixpkgs { inherit system; };
+      python3 = pkgs.python3.override {
+        packageOverrides = final: prev: {
+          meshcore = final.callPackage ./meshcore.nix { };
+          mqttproxy = final.callPackage ./mqttproxy.nix {
+            meshcore = final.meshcore;
+          };
+        };
+      };
+    in
     {
+      packages."${system}" = {
+        inherit python3;
+        python3-meshcore = (python3.withPackages (ps: with ps; [ ps.meshcore ]));
+        python3-mqttproxy = (python3.withPackages (ps: with ps; [ ps.mqttproxy ]));
+      };
       nixosConfigurations.node1 = createSystem {
         keys = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEPATG9D1L1UtuZwhxWkhCFIDLwTfPxyMsB30JxT/5bV" ];
         hostname = "tormqttproxy1";
@@ -64,7 +82,7 @@
 
       deploy.nodes = {
         node1 = {
-          hostname = "172.16.0.144";
+          hostname = "172.16.0.186";
           profiles.system = {
             user = "root";
             sshUser = "root";
@@ -73,11 +91,11 @@
           };
         };
         node2 = {
-          hostname = "172.16.0.186";
+          hostname = "172.16.0.144";
           profiles.system = {
             user = "root";
             sshUser = "root";
-            path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.node1;
+            path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.node2;
             remoteBuild = false;
           };
         };

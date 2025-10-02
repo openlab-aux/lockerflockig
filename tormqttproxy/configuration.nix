@@ -4,6 +4,7 @@
   keys,
   hostname,
   agenix,
+  pythonPackages,
   ...
 }:
 {
@@ -92,6 +93,8 @@
     #   wget
     neovim
     qrrs
+    pythonPackages.python3-meshcore
+    pythonPackages.python3-mqttproxy
   ];
 
   programs.bash.shellInit = ''

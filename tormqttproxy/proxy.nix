@@ -1,12 +1,17 @@
 {
   config,
+  lib,
   pkgs,
   mqttBridgeAddress,
   ...
 }:
+let
+  cfg = config.services.meshcore-mqtt-bridge;
+in
 {
   services.mosquitto = {
     enable = true;
+    persistence = false;
     bridges.tor = {
       addresses = [
         {
@@ -38,7 +43,9 @@
     torsocks.enable = true;
   };
 
-  networking.firewall.allowedTCPPorts = [ 1883 ];
+  networking.firewall.enable = true;
+  # Only enable for debugging!
+  # networking.firewall.allowedTCPPorts = [ 1883 ];
 
   systemd.services.mqtt-tor-proxy = {
     description = "MQTT Tor proxy via socat";
@@ -52,4 +59,5 @@
       User = "nobody";
     };
   };
+
 }
