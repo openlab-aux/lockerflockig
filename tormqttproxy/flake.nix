@@ -71,13 +71,13 @@
       nixosConfigurations.node1 = createSystem {
         keys = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEPATG9D1L1UtuZwhxWkhCFIDLwTfPxyMsB30JxT/5bV" ];
         hostname = "tormqttproxy1";
-        mqttBridgeAddress = "dp7oq6xvy44ytpcy5wi2dkpyslwzphcgiv743g5iofwlz6boiygvx2id.onion";
+        mqttBridgeAddress = "rgpqo6a5pmmpvjl3nj6jbc4kd64eqijcx4m62sfexg7hsx6gmeaisbyd.onion";
       };
 
       nixosConfigurations.node2 = createSystem {
         keys = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAmLNSzV9lFwdDUUPJqlQBYhyyem12zIO93xqD8sdXdW" ];
         hostname = "tormqttproxy2";
-        mqttBridgeAddress = "mrgrft3vcbcq27lp7cmxhdw2pbu2h4imypijkchgmi2fefk353kd2yqd.onion";
+        mqttBridgeAddress = "tkzmr3x2ir2prx6hw7oigw2o73gdvjdvlmtoqqalttbg3gugn7ei35yd.onion";
       };
 
       deploy.nodes = {
