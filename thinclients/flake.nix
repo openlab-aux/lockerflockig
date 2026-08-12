@@ -10,6 +10,10 @@
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -19,6 +23,7 @@
       deploy-rs,
       flake-utils,
       agenix,
+      home-manager,
       disko,
     }:
     let
@@ -74,6 +79,23 @@
         ];
       };
 
+      nixosConfigurations.rakete = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          disko.nixosModules.disko
+          agenix.nixosModules.default
+          home-manager.nixosModules.home-manager
+          ./base/configuration.nix
+          (
+            { ... }:
+            {
+              networking.hostName = "rakete";
+            }
+          )
+          ./modules/rakete.nix
+        ];
+      };
+
       deploy.nodes.audiovideo = {
         hostname = "audiovideo.lab";
         profiles.system = {
@@ -83,5 +105,19 @@
           remoteBuild = false;
         };
       };
+
+      deploy.nodes.rakete = {
+        hostname = "rakete.lab";
+        profiles.system = {
+          user = "root";
+          sshUser = "root";
+          path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.rakete;
+          remoteBuild = false;
+          confirmTimeout = 90;
+          magicRollback = false;
+        };
+      };
+
     };
+
 }

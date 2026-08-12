@@ -1,14 +1,14 @@
-{...}: {
+{ ... }: {
   disko.devices = {
     disk = {
-	    # To specify an additional drive, create another entry e.g. disk.data
+      # To specify an additional drive, create another entry e.g. disk.data
       main = {
         device = "/dev/sda";
         type = "disk";
         content = {
           type = "gpt";
           partitions = {
-			      # Boot partition formatted for EFI
+            # Boot partition formatted for EFI
             boot = {
               size = "1M";
               type = "EF02"; # for grub MBR
@@ -23,7 +23,7 @@
                 mountpoint = "/boot";
               };
             };
-			      # Optional swap partition
+            # Optional swap partition
             swap = {
               size = "2G";
               content = {
@@ -31,7 +31,7 @@
                 randomEncryption = true;
               };
             };
-			      # Root partition for operating system storage
+            # Root partition for operating system storage
             root = {
               size = "100%";
               content = {

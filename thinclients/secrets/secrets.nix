@@ -13,6 +13,7 @@ let
     audiovideo
   ];
 
-in {
+in
+{
   "foobar.age".publicKeys = users ++ systems;
 }

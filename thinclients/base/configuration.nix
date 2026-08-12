@@ -15,12 +15,16 @@
     initialHashedPassword = lib.mkForce "$y$j9T$pP12RGiG/ftp.21vfzdpk0$KSNNZ.I7s3biDykt7VcgEsw0JbGddRqTX7ZApFhfjr8";
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGnZ9eV387NUKXIs+TSxRjL5bH/bCp2qI7imzTuhjsdh root@nixos"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINZ/XY0zYbrSzVwU/NTiO0QrlsiQ2p62P4PUj7XJsKIA yonggan@Yonggan"
     ];
   };
 
   users.users.openlab = {
     isNormalUser = true;
-    extraGroups = [ "audio" "video" ];
+    extraGroups = [
+      "audio"
+      "video"
+    ];
     initialPassword = "openlab";
     createHome = true;
   };
