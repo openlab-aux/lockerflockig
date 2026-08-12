@@ -9,7 +9,15 @@ let
   installPath = "/home/openlab/rakete";
 
   switchToWorkspace2 = pkgs.writeShellScript "switch-workspace-2" ''
-    ${pkgs.sway}/bin/swaymsg workspace 2
+    hour=$(date +%H)
+
+    if [ "$hour" -ge 22 ] || [ "$hour" -lt 8 ]; then
+      ${pkgs.libnotify}/bin/notify-send \
+        "Rakete" \
+        "nicht verfügbar zwischen 22 und 8 Uhr, wegen Lärmschutz"
+    else
+      ${pkgs.sway}/bin/swaymsg workspace 2
+    fi
   '';
 
   moveWorkspacesToInternal = pkgs.writeShellScript "rakete-workspaces-internal" ''
@@ -207,7 +215,6 @@ in
               }
             ];
 
-            # One command = one sequential script.
             exec = "${moveWorkspacesToExternal}";
           };
 
@@ -234,8 +241,6 @@ in
           gtk = true;
         };
 
-        # Required when Sway is started directly from tty1 so
-        # systemd user services inherit the Wayland environment.
         systemd.variables = [
           "--all"
         ];
@@ -250,8 +255,10 @@ in
               command =
                 "${pkgs.firefox}/bin/firefox --new-window http://infopanel2.lab.weltraumpflege.org/";
             }
+
             {
-              command = "${pkgs.sway}/bin/swaymsg workspace 2 && sleep 1 && ${installPath}/rakete --exhibition";
+              command =
+                "${pkgs.sway}/bin/swaymsg workspace 2 && sleep 1 && ${installPath}/rakete --exhibition";
             }
           ];
 
@@ -265,6 +272,7 @@ in
               criteria = {
                 app_id = "firefox";
               };
+
               command = "fullscreen enable";
             }
           ];
