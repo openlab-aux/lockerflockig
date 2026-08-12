@@ -3,45 +3,44 @@
 { pkgs, lib, ... }:
 
 let
-  urlB64 = "aHR0cHM6Ly9kcml2ZS51c2VyY29udGVudC5nb29nbGUuY29tL2Rvd25sb2FkP2lkPTFyVlE4RDZ2ZXA5Q0xUeHhKNGlhdzZQbEhRVVVpUHFNeiZleHBvcnQ9ZG93bmxvYWQmYXV0aHVzZXI9MCZjb25maXJtPXQmdXVpZD1iMTUyNDBjYi01MmMwLTQzNDktYTkwMS00ZTU3MGEzZWUwZTAmYXQ9QUZZTHo0Tkl0bXVQSlNZRzhOSnhmcDZtY1k5OSUzQTE3ODY0Nzg1NzU0Njc=";
+  urlB64 =
+    "...";
 
   installPath = "/home/openlab/rakete";
 
   switchToWorkspace2 = pkgs.writeShellScript "switch-workspace-2" ''
-    hour=$(date +%H)
-
-    if [ "$hour" -ge 22 ] || [ "$hour" -lt 8 ]; then
-      ${pkgs.libnotify}/bin/notify-send \
-        "Rakete" \
-        "nicht verfügbar zwischen 22 und 8 Uhr, wegen Lärmschutz"
-    else
-      ${pkgs.sway}/bin/swaymsg workspace 2
-    fi
+    ${pkgs.sway}/bin/swaymsg workspace 2
   '';
 
-  mirrorExternal = pkgs.writeShellScript "rakete-mirror-external" ''
-    set -u
+  moveWorkspacesToInternal = pkgs.writeShellScript "rakete-workspaces-internal" ''
+    set -eu
 
-    # If a previous mirror instance survived a display reconnect,
-    # terminate it before starting a new one.
-    ${pkgs.procps}/bin/pkill -x wl-mirror 2>/dev/null || true
+    ${pkgs.sway}/bin/swaymsg \
+      "workspace 1, move workspace to output eDP-1"
 
-    # Give Sway a moment to finish applying the newly connected output.
-    ${pkgs.coreutils}/bin/sleep 0.5
+    ${pkgs.sway}/bin/swaymsg \
+      "workspace 2, move workspace to output eDP-1"
+  '';
 
-    # Mirror the internal laptop display onto the external HDMI output.
-    exec ${pkgs.wl-mirror}/bin/wl-mirror \
-      --fullscreen-output HDMI-A-1 \
-      eDP-1
+  moveWorkspacesToExternal = pkgs.writeShellScript "rakete-workspaces-external" ''
+    set -eu
+
+    ${pkgs.sway}/bin/swaymsg \
+      "workspace 1, move workspace to output HDMI-A-1"
+
+    ${pkgs.sway}/bin/swaymsg \
+      "workspace 2, move workspace to output HDMI-A-1"
+
+    ${pkgs.sway}/bin/swaymsg workspace 2
   '';
 in
 {
   environment.systemPackages = with pkgs; [
     wl-clipboard
     mako
-    wl-mirror
     kanshi
-    pkgs.libnotify
+    libnotify
+    procps
   ];
 
   services.gnome.gnome-keyring.enable = true;
@@ -67,6 +66,7 @@ in
     stdenv.cc.cc.lib
   ];
 
+  # NetworkManager manages both Ethernet and Wi-Fi.
   networking.networkmanager = {
     enable = true;
 
@@ -90,13 +90,27 @@ in
     };
   };
 
+  # Keep running when the laptop lid is closed.
+  services.logind.settings.Login = {
+    HandleLidSwitch = "ignore";
+    HandleLidSwitchExternalPower = "ignore";
+    HandleLidSwitchDocked = "ignore";
+  };
+
   systemd.services.rakete-install = {
     description = "Download and install rakete game files";
 
-    wantedBy = [ "multi-user.target" ];
+    wantedBy = [
+      "multi-user.target"
+    ];
 
-    after = [ "network-online.target" ];
-    wants = [ "network-online.target" ];
+    after = [
+      "network-online.target"
+    ];
+
+    wants = [
+      "network-online.target"
+    ];
 
     unitConfig.ConditionPathExists = "!${installPath}/rakete";
 
@@ -151,8 +165,6 @@ in
       services.mako = {
         enable = true;
 
-        output = "eDP-1";
-
         settings = {
           anchor = "center";
           width = 600;
@@ -167,8 +179,9 @@ in
           background-color = "#1e1e2eee";
           text-color = "#ffffffff";
 
-          default-timeout = 6000;
-          ignore-timeout = 0;
+          default-timeout = 10000;
+          ignore-timeout = 1;
+          max-visible = 1;
 
           format = "<b>%s</b>\\n%b";
           markup = 1;
@@ -179,13 +192,13 @@ in
         enable = true;
 
         profiles = {
-          mirror = {
-            name = "mirror";
+          external = {
+            name = "external";
 
             outputs = [
               {
                 criteria = "eDP-1";
-                status = "enable";
+                status = "disable";
               }
 
               {
@@ -194,7 +207,21 @@ in
               }
             ];
 
-            exec = "${mirrorExternal}";
+            # One command = one sequential script.
+            exec = "${moveWorkspacesToExternal}";
+          };
+
+          internal = {
+            name = "internal";
+
+            outputs = [
+              {
+                criteria = "eDP-1";
+                status = "enable";
+              }
+            ];
+
+            exec = "${moveWorkspacesToInternal}";
           };
         };
       };
@@ -202,20 +229,43 @@ in
       wayland.windowManager.sway = {
         enable = true;
 
+        wrapperFeatures = {
+          base = true;
+          gtk = true;
+        };
+
+        # Required when Sway is started directly from tty1 so
+        # systemd user services inherit the Wayland environment.
+        systemd.variables = [
+          "--all"
+        ];
+
         config = {
           modifier = "Mod4";
 
+          terminal = "${pkgs.foot}/bin/foot";
+
           startup = [
             {
-              command = "${pkgs.firefox}/bin/firefox --kiosk http://infopanel2.lab.weltraumpflege.org/";
+              command =
+                "${pkgs.firefox}/bin/firefox --new-window http://infopanel2.lab.weltraumpflege.org/";
             }
-
             {
-              command = "swaymsg 'workspace 2; exec /home/openlab/rakete/rakete --exhibition'";
+              command = "${pkgs.sway}/bin/swaymsg workspace 2 && sleep 1 && ${installPath}/rakete --exhibition";
             }
+          ];
 
+          window = {
+            titlebar = false;
+            border = 0;
+          };
+
+          window.commands = [
             {
-              command = "swaymsg 'workspace 1'";
+              criteria = {
+                app_id = "firefox";
+              };
+              command = "fullscreen enable";
             }
           ];
 
@@ -228,33 +278,26 @@ in
 
             "2" = [
               {
-                app_id = "rakete";
+                class = "rakete";
               }
             ];
           };
 
-          workspaceOutputAssign = [
-            {
-              workspace = "1";
-              output = "eDP-1";
-            }
-
-            {
-              workspace = "2";
-              output = "eDP-1";
-            }
-          ];
-
           keybindings = lib.mkOptionDefault {
-            "${config.wayland.windowManager.sway.config.modifier}+1" = "workspace 1";
+            "${config.wayland.windowManager.sway.config.modifier}+1" =
+              "workspace 1";
 
-            "${config.wayland.windowManager.sway.config.modifier}+2" = "exec ${switchToWorkspace2}";
+            "${config.wayland.windowManager.sway.config.modifier}+2" =
+              "exec ${switchToWorkspace2}";
 
-            "${config.wayland.windowManager.sway.config.modifier}+Return" = "exec ${pkgs.foot}/bin/foot";
+            "${config.wayland.windowManager.sway.config.modifier}+Return" =
+              "exec ${pkgs.foot}/bin/foot";
 
-            "${config.wayland.windowManager.sway.config.modifier}+Shift+q" = "kill";
+            "${config.wayland.windowManager.sway.config.modifier}+Shift+q" =
+              "kill";
 
-            "${config.wayland.windowManager.sway.config.modifier}+d" = "exec ${pkgs.wmenu}/bin/wmenu-run";
+            "${config.wayland.windowManager.sway.config.modifier}+d" =
+              "exec ${pkgs.wmenu}/bin/wmenu-run";
           };
         };
       };
@@ -268,6 +311,6 @@ in
   };
 
   environment.loginShellInit = ''
-    [[ "$(tty)" == /dev/tty1 ]] && sway
+    [[ "$(tty)" == /dev/tty1 ]] && exec sway
   '';
 }
