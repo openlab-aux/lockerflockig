@@ -16,6 +16,7 @@
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGnZ9eV387NUKXIs+TSxRjL5bH/bCp2qI7imzTuhjsdh root@nixos"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINZ/XY0zYbrSzVwU/NTiO0QrlsiQ2p62P4PUj7XJsKIA yonggan@Yonggan"
+      "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDFhMuAk6prXqp5Db9tAQ+LZcflgW2Xc+W2vvxE9l/JQbsQIuRAWOGHP8P5F4RvStIymdUjKBqbmj4tZFNpP/dl6uHqERg0wC9IAihB8KIiyaf8ImlG/a0OxzvJj2XTeJ9/nvWKxS978e6Z/pB0WrA4tM46qBKHcAHbc8cli8rqzr4IBRNaMnMloucirGH/8oST0crHMVGwcXl890Xlbha7YhDxI5bYhA1/LxzAmQwgNtPGEbZcMSLEyCPEfADqxMVVS7ffcQTvVQzVxuNcwb4PY2ARedftvhEN0WsVQdfCr+9ArWQ5EyFAOhh/O72t5FqGjpH1doCrdA5IkFEwArTD kingbbq@ObenDroben.fritz.box"
     ];
   };
 

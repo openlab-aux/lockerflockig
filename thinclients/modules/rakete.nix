@@ -253,7 +253,7 @@ in
           startup = [
             {
               command =
-                "${pkgs.firefox}/bin/firefox --new-window http://infopanel2.lab.weltraumpflege.org/";
+                "${pkgs.firefox}/bin/firefox http://infopanel2.lab.weltraumpflege.org/";
             }
 
             {
