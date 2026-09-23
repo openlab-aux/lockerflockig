@@ -14,6 +14,10 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -24,8 +28,9 @@
       flake-utils,
       agenix,
       home-manager,
+      sops-nix,
       disko,
-    }:
+    }@inputs:
     let
       pkgs = import nixpkgs {
         system = "x86_64-linux";
@@ -96,6 +101,23 @@
         ];
       };
 
+      nixosConfigurations.taler = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          disko.nixosModules.disko
+          agenix.nixosModules.default
+          home-manager.nixosModules.home-manager
+          ./base/configuration.nix
+          (
+            { ... }:
+            {
+              networking.hostName = "taler";
+            }
+          )
+          ./modules/taler.nix
+        ];
+      };
+
       deploy.nodes.audiovideo = {
         hostname = "audiovideo.lab";
         profiles.system = {
@@ -112,6 +134,18 @@
           user = "root";
           sshUser = "root";
           path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.rakete;
+          remoteBuild = false;
+          confirmTimeout = 90;
+          magicRollback = false;
+        };
+      };
+
+      deploy.nodes.taler = {
+        hostname = "172.20.79.198";
+        profiles.system = {
+          user = "root";
+          sshUser = "root";
+          path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.taler;
           remoteBuild = false;
           confirmTimeout = 90;
           magicRollback = false;

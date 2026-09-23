@@ -1,0 +1,10 @@
+keys:
+  - &admin_root "age1fnw26c4sx032md4ggvtwsnkdqnw4rlyjmuzvnqvcy2vxq3eszf0q7qpjxl"
+  - &admin_yonggan "age13zlukwwn4tg8xnfvn33yr5h73jh59zewnue4s56my3knkjaj44pqz2y4yd"
+
+creation_rules:
+  - path_regex: thinclients/secrets/taler\.yaml$
+    key_groups:
+      - age:
+          - *admin_yonggan
+          - *admin_root

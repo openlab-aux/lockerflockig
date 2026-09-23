@@ -3,8 +3,7 @@
 { pkgs, lib, ... }:
 
 let
-  urlB64 =
-    "...";
+  urlB64 = "...";
 
   installPath = "/home/openlab/rakete";
 
@@ -120,7 +119,7 @@ in
       "network-online.target"
     ];
 
-    unitConfig.ConditionPathExists = "!${installPath}/rakete";
+    unitConfig.ConditionPathExists = "!${installPath}";
 
     serviceConfig = {
       Type = "oneshot";
@@ -252,13 +251,11 @@ in
 
           startup = [
             {
-              command =
-                "${pkgs.firefox}/bin/firefox http://infopanel2.lab.weltraumpflege.org/";
+              command = "${pkgs.firefox}/bin/firefox http://infopanel2.lab.weltraumpflege.org/";
             }
 
             {
-              command =
-                "${pkgs.sway}/bin/swaymsg workspace 2 && sleep 1 && ${installPath}/rakete --exhibition";
+              command = "${pkgs.sway}/bin/swaymsg workspace 2 && sleep 1 && ${installPath}/rakete --exhibition";
             }
           ];
 
@@ -292,20 +289,15 @@ in
           };
 
           keybindings = lib.mkOptionDefault {
-            "${config.wayland.windowManager.sway.config.modifier}+1" =
-              "workspace 1";
+            "${config.wayland.windowManager.sway.config.modifier}+1" = "workspace 1";
 
-            "${config.wayland.windowManager.sway.config.modifier}+2" =
-              "exec ${switchToWorkspace2}";
+            "${config.wayland.windowManager.sway.config.modifier}+2" = "exec ${switchToWorkspace2}";
 
-            "${config.wayland.windowManager.sway.config.modifier}+Return" =
-              "exec ${pkgs.foot}/bin/foot";
+            "${config.wayland.windowManager.sway.config.modifier}+Return" = "exec ${pkgs.foot}/bin/foot";
 
-            "${config.wayland.windowManager.sway.config.modifier}+Shift+q" =
-              "kill";
+            "${config.wayland.windowManager.sway.config.modifier}+Shift+q" = "kill";
 
-            "${config.wayland.windowManager.sway.config.modifier}+d" =
-              "exec ${pkgs.wmenu}/bin/wmenu-run";
+            "${config.wayland.windowManager.sway.config.modifier}+d" = "exec ${pkgs.wmenu}/bin/wmenu-run";
           };
         };
       };
