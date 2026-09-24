@@ -82,6 +82,7 @@ in
         connection = {
           id = "Labor 2.0";
           type = "wifi";
+          autoconnect = true;
         };
 
         wifi = {
